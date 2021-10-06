@@ -49,7 +49,7 @@ public class NewOrder extends Procedure {
       "  FROM " + TPCCConstants.TABLENAME_CUSTOMER +
       " WHERE C_W_ID = ? " +
       "   AND C_D_ID = ? " +
-      "   AND C_ID = ?");
+      "   AND C_ID = ? FOR KEY SHARE");
 
   public static final InstrumentedSQLStmt stmtGetWhseSQL = new InstrumentedSQLStmt(
       "SELECT W_TAX " +
@@ -176,7 +176,7 @@ public class NewOrder extends Procedure {
       } else {
         sb.append(",?");
       }
-      stmtGetStockSQLArr[i - 1] = new InstrumentedSQLStmt(stmtGetStockSQL.getHistogram(), sb.toString() + ")");
+      stmtGetStockSQLArr[i - 1] = new InstrumentedSQLStmt(stmtGetStockSQL.getHistogram(), sb.toString() + ") FOR KEY SHARE");
     }
 
     // We create 15 statements to update the rows in `STOCK` table. Each string looks like:
@@ -226,8 +226,7 @@ public class NewOrder extends Procedure {
         supplierWarehouseIDs[i] = terminalWarehouseID;
       } else {
         do {
-          supplierWarehouseIDs[i] = TPCCUtil.randomNumber(1,
-              numWarehouses, gen);
+          supplierWarehouseIDs[i] = TPCCUtil.getRandomWarehouseId(w, terminalWarehouseID, numWarehouses, gen);
         } while (supplierWarehouseIDs[i] == terminalWarehouseID
             && numWarehouses > 1);
         allLocal = 0;
